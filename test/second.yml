@@ -1,0 +1,49 @@
+
+provider:
+  name: aws
+
+custom:
+  dynamo-alarms:
+    readCapacityAlarmThreshold: 3000
+    writeCapacityAlarmThreshold: 3000
+    period: 60
+    evaluationPeriods: 1
+    topicName: DynamoTablesAlarmTopic
+    filter:
+      - "*"
+
+
+resources:
+  Resources:
+
+    Example1Table:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: "Example1Table"
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+
+    Example2Table:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: "Example2Table"
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+
+    DynamoTablesAlarmTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+          - Endpoint: "example@example.com"
+            Protocol: email
+        TopicName: "topicName"

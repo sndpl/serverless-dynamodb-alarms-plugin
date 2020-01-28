@@ -7,15 +7,30 @@ In Serverless template:
 
 ```
 plugins:
-  - dynamodb-alarms-plugin
+  - serverless-dynamodb-alarms-plugin
 
 custom:
-  dynamo-alarms:
-    ReadCapacityPercent: 80
-    WriteCapacityPercent: 80
-    Period: 60
-    EvaluationPeriods: 1
-    TopicName: snsNotificationTopic
+  ddbAlarms:
+    readCapacityAlarmThreshold: 3000
+    writeCapacityAlarmThreshold: 3000
+    period: 60
+    evaluationPeriods: 1
+    topicName: snsNotificationTopic
+    filter:
+      - "*"
 ```
 
+Match only listed tables:
 
+```
+custom:
+  ddbAlarms:
+    readCapacityAlarmThreshold: 3000
+    writeCapacityAlarmThreshold: 3000
+    period: 60
+    evaluationPeriods: 1
+    topicName: snsNotificationTopic
+    filter:
+      - Exmaple1Table
+      - Example2Table
+```
