@@ -11,8 +11,12 @@ plugins:
 
 custom:
   ddbAlarms:
-    readCapacityAlarmThreshold: 3000
-    writeCapacityAlarmThreshold: 3000
+    read:
+      provisionedCapacityUnitsAlarmThreshold: 3000
+      throttleEvents: 1
+    write:
+      provisionedCapacityUnitsAlarmThreshold: 3000
+      throttleEvents: 1  
     period: 60
     evaluationPeriods: 1
     topicName: snsNotificationTopic
@@ -25,8 +29,12 @@ Match only listed tables:
 ```
 custom:
   ddbAlarms:
-    readCapacityAlarmThreshold: 3000
-    writeCapacityAlarmThreshold: 3000
+    read:
+      provisionedCapacityUnitsAlarmThreshold: 3000
+      throttleEvents: 1
+    write:
+      provisionedCapacityUnitsAlarmThreshold: 3000
+      throttleEvents: 1  
     period: 60
     evaluationPeriods: 1
     topicName: snsNotificationTopic

@@ -39,12 +39,16 @@ class ServerlessPlugin {
 
     const alarms = Object.values(dynamoTables)
         .map(item => {
-          const readAlarm = alarmConfig.createReadAlarm ? this.createReadAlarm(item.Properties, alarmConfig) : undefined;
-          const writeAlarm = alarmConfig.createWriteAlarm ? this.createWriteAlarm(item.Properties, alarmConfig) : undefined;
+          const readProvCapacityAlarm = alarmConfig.createReadAlarm ? this.createReadProvCapacityAlarm(item.Properties, alarmConfig) : undefined;
+          const writeProvCapacityAlarm = alarmConfig.createWriteAlarm ? this.createWriteProvCapacityAlarm(item.Properties, alarmConfig) : undefined;
+          const readThrottlingAlarm = alarmConfig.createReadThrottlingAlarm ? this.createReadThrottlingAlarm(item.Properties, alarmConfig) : undefined;
+          const writeThrottlingAlarm = alarmConfig.createWriteThrottlingAlarm ? this.createWriteThrottlingAlarm(item.Properties, alarmConfig) : undefined;
 
           const capacityAlarmSnippet = {
-            ...readAlarm,
-            ...writeAlarm
+            ...readProvCapacityAlarm,
+            ...writeProvCapacityAlarm,
+            ...readThrottlingAlarm,
+            ...writeThrottlingAlarm,
           };
           this.serverless.cli.log(`Creating Cloudwatch alarms for DynamoDB table ${item.tableName}`);
           return capacityAlarmSnippet;
@@ -55,12 +59,20 @@ class ServerlessPlugin {
     });
   }
 
-  createReadAlarm(item, alarmConfig) {
-    return this.createAlarm(item, alarmConfig, 'ReadAlarm', 'ConsumedReadCapacityUnits', alarmConfig.readCapacityAlarmThreshold);
+  createReadProvCapacityAlarm(item, alarmConfig) {
+    return this.createAlarm(item, alarmConfig, 'ReadProvCapAlarm', 'ProvisionedReadCapacityUnits', alarmConfig.readThreshold);
   }
 
-  createWriteAlarm(item, alarmConfig) {
-    return this.createAlarm(item, alarmConfig, 'WriteAlarm', 'ConsumedWriteCapacityUnits', alarmConfig.writeCapacityAlarmThreshold);
+  createWriteProvCapacityAlarm(item, alarmConfig) {
+    return this.createAlarm(item, alarmConfig, 'WriteProvCapAlarm', 'ProvisionedWriteCapacityUnits', alarmConfig.writeThreshold);
+  }
+
+  createReadThrottlingAlarm(item, alarmConfig) {
+    return this.createAlarm(item, alarmConfig, 'ReadThrottleAlarm', 'ReadThrottleEvents', alarmConfig.readThrottlingThreshold);
+  }
+
+  createWriteThrottlingAlarm(item, alarmConfig) {
+    return this.createAlarm(item, alarmConfig, 'WriteThrottleAlarm', 'WriteThrottleEvents', alarmConfig.writeThrottlingThreshold);
   }
 
   createAlarm(item, alarmConfig, alarmName, metricName, threshold) {
@@ -69,7 +81,7 @@ class ServerlessPlugin {
       [alphaNumTableName + alarmName]: {
         Type: 'AWS::CloudWatch::Alarm',
         Properties: {
-          AlarmDescription: `DynamoDB capacity alarm for ${item.TableName}`,
+          AlarmDescription: `DynamoDB ${metricName} alarm for ${item.TableName}`,
           Namespace: 'AWS/DynamoDB',
           MetricName: metricName,
           Dimensions: [
@@ -93,16 +105,29 @@ class ServerlessPlugin {
 }
 
 class AlarmConfig {
-  constructor(alarmConfig) {
-    this.readCapacityAlarmThreshold = alarmConfig.readCapacityAlarmThreshold;
-    this.writeCapacityAlarmThreshold = alarmConfig.writeCapacityAlarmThreshold;
-    this.period = alarmConfig.period;
-    this.evaluationPeriods = alarmConfig.evaluationPeriods;
-    this.topicName = alarmConfig.topicName;
-    this.filterRules = alarmConfig.filter;
-    this.addToAll = alarmConfig.filter[0] === '*';
-    this.createReadAlarm = !!alarmConfig.readCapacityAlarmThreshold;
-    this.createWriteAlarm = !!alarmConfig.writeCapacityAlarmThreshold;
+  constructor(config) {
+    this.createReadAlarm = !!config.read.provisionedCapacityUnitsAlarmThreshold;
+    this.createWriteAlarm = !!config.write.provisionedCapacityUnitsAlarmThreshold;
+    if (this.createReadAlarm) {
+      this.readThreshold = config.read.provisionedCapacityUnitsAlarmThreshold;
+    }
+    if (this.createWriteAlarm) {
+      this.writeThreshold = config.write.provisionedCapacityUnitsAlarmThreshold;
+    }
+    this.createReadThrottlingAlarm = !!config.read.throttleEvents;
+    this.createWriteThrottlingAlarm = !!config.write.throttleEvents;
+
+    if (this.createReadThrottlingAlarm) {
+      this.readThrottlingThreshold = config.read.throttleEvents;
+    }
+    if (this.createWriteThrottlingAlarm) {
+      this.writeThrottlingThreshold = config.write.throttleEvents;
+    }
+    this.period = config.period;
+    this.evaluationPeriods = config.evaluationPeriods;
+    this.topicName = config.topicName;
+    this.filterRules = config.filter;
+    this.addToAll = config.filter[0] === '*';
   }
 
   tableNameMatches(name) {
