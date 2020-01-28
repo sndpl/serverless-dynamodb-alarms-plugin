@@ -1,5 +1,5 @@
-const handler = require('../index')
+const handler = require('../index');
 
 it('todo', function () {
 
-})
+});
