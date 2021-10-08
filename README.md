@@ -10,13 +10,13 @@ plugins:
   - serverless-dynamodb-alarms-plugin
 
 custom:
-  ddbAlarms:
+  dynamo-alarms:
     read:
       provisionedCapacityUnitsAlarmThreshold: 3000
       throttleEvents: 1
     write:
       provisionedCapacityUnitsAlarmThreshold: 3000
-      throttleEvents: 1  
+      throttleEvents: 1
     period: 60
     evaluationPeriods: 1
     topicName: snsNotificationTopic
@@ -28,13 +28,13 @@ Match only listed tables:
 
 ```
 custom:
-  ddbAlarms:
+  dynamo-alarms:
     read:
       provisionedCapacityUnitsAlarmThreshold: 3000
       throttleEvents: 1
     write:
       provisionedCapacityUnitsAlarmThreshold: 3000
-      throttleEvents: 1  
+      throttleEvents: 1
     period: 60
     evaluationPeriods: 1
     topicName: snsNotificationTopic

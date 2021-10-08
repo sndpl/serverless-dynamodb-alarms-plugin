@@ -50,7 +50,7 @@ class ServerlessPlugin {
             ...readThrottlingAlarm,
             ...writeThrottlingAlarm,
           };
-          this.serverless.cli.log(`Creating Cloudwatch alarms for DynamoDB table ${item.tableName}`);
+          this.serverless.cli.log(`Creating Cloudwatch alarms for DynamoDB table ${item.Properties.TableName}`);
           return capacityAlarmSnippet;
         });
 
